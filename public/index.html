@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/index.css">
+
+    <title>Receipt Scanner</title>
+</head>
+
+<body>
+    <!--mt      -- Header --         -->
+    <header class="appHeader">
+        <h1>Receipt Scanner</h1>
+        <p>Save / Track receipts & Expenses.</p>
+    </header>
+
+    <!--!       --  Dashboard Banner  --        -->
+    <section class="dashboardBanner">
+        <h2>Dashboard</h2>
+
+        <button type="button" id="uploadEditToggleBtn">
+            Upload / Edit
+        </button>
+    </section>
+
+    <main id="uploadEditPanel" class="appLayout" style="display: none;">
+
+        <!--mt      -- Create Group --       -->
+        <section class="card">
+            <h2>Create Receipt Group</h2>
+
+            <form id="createGroupForm">
+                <label for="groupTitle">Group Title</label>
+                <input type="text" id="groupTitle" placeholder="Example: Receipts from 3/4/25, Misc, Bills, gas,"
+                    required>
+
+                <button type="submit">Create Group</button>
+            </form>
+
+            <p id="groupStatus"></p>
+        </section>
+
+        <!--mt      -- Groups List --        -->
+        <section class="card">
+            <h2>Receipt Groups <span id="groupCount">(0)</span></h2>
+
+            <button type="button" id="loadGroupsBtn">Refresh Groups</button>
+
+            <div id="groupsContainer" class="groupsContainer">
+                <!--! Groups load here -->
+            </div>
+
+        </section>
+
+        <!--mt      -- Upload Receipt --         -->
+        <section class="card">
+            <h2>Upload Receipt</h2>
+
+            <p>
+                Selected Group:
+                <strong id="selectedGroupText">None</strong>
+            </p>
+
+            <form id="uploadReceiptForm">
+                <input type="file" id="receiptImage" accept="image/*" required>
+
+                <button type="submit">Upload Receipt</button>
+            </form>
+
+            <p id="uploadStatus"></p>
+        </section>
+
+        <!--mt      -- Receipts --       -->
+        <section class="card fullWidth">
+            <h2>Receipts In Selected Group</h2>
+
+            <div id="receiptsContainer" class="receiptsContainer">
+                <!--! Receipts load here -->
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="/JS/app.js"></script>
+
+</body>
+
+</html>

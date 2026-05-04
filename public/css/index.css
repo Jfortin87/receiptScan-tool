@@ -1,0 +1,172 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f4f4;
+    color: #222;
+}
+
+.appHeader {
+    background: #222;
+    color: white;
+    padding: 24px;
+    text-align: center;
+}
+
+.appHeader h1 {
+    margin: 0 0 8px;
+}
+
+.appHeader p {
+    margin: 0;
+}
+
+/* mt -- Dashboard banner */
+.dashboardBanner {
+    width: min(1200px, 95%);
+    margin: 24px auto 0;
+    background: white;
+    padding: 22px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.dashboardBanner h2 {
+    margin: 0 0 8px;
+}
+
+.dashboardBanner p {
+    margin: 0 0 14px;
+}
+
+.appLayout {
+    width: min(1200px, 95%);
+    margin: 24px auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.card {
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+
+.groupActions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.deleteGroupBtn {
+    background: #b00020;
+}
+
+.deleteGroupBtn:hover {
+    background: #d00028;
+}
+
+.fullWidth {
+    grid-column: 1 / -1;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+input,
+button {
+    padding: 10px;
+    font-size: 1rem;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    background: #222;
+    color: white;
+    border-radius: 6px;
+}
+
+button:hover {
+    background: #444;
+}
+
+.groupCard,
+.receiptCard {
+    border: 1px solid #ddd;
+    padding: 14px;
+    margin-top: 12px;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+/* mt -- Selected receipt group visual cue */
+.groupCard.selectedGroup {
+    border: 3px solid #007bff;
+    background: #eef6ff;
+}
+
+.groupCard h3,
+.receiptCard h3 {
+    margin-top: 0;
+}
+
+.receiptTop {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.receiptImage {
+    width: 100%;
+    max-width: 320px;
+    display: block;
+    margin: 12px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.receiptActions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.deleteReceiptBtn {
+    background: #b00020;
+}
+
+.deleteReceiptBtn:hover {
+    background: #d00028;
+}
+
+pre {
+    background: #111;
+    color: #eee;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+
+#groupStatus,
+#uploadStatus {
+    font-weight: bold;
+}
+
+@media (max-width: 900px) {
+    .appLayout {
+        grid-template-columns: 1fr;
+    }
+}
