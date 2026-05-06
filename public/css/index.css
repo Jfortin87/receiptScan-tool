@@ -151,6 +151,113 @@ button:hover {
     background: #d00028;
 }
 
+.receiptToolbar {
+    margin: 10px 0 14px;
+}
+
+.rawOcrTextSection {
+    display: none;
+}
+
+/*mt    -- Hidden Receipt Form --    */
+/* mt -- Edit receipt data panel */
+.editReceiptDataPanel {
+    margin: 14px 0;
+    padding: 14px;
+    border: 2px solid #222;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.editReceiptDataHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.editReceiptDataHeader h3 {
+    margin: 0;
+}
+
+#closeEditReceiptDataBtn {
+    background: #555;
+}
+
+
+/*mt      -- Receipt Hidden Form Edit Btn --   */
+.editReceiptDataActions {
+    margin-top: 14px;
+}
+
+
+/*mt    -- Receipt formatted Data --  */
+.formattedReceiptPreview {
+    margin-top: 8px;
+    padding: 8px;
+    background: #f4f8ff;
+    border: 1px solid #cfe2ff;
+    border-radius: 6px;
+}
+
+.formattedReceiptPreview p {
+    margin: 4px 0;
+}
+
+
+/*mt        -- receipt Items --  */
+/* mt -- Receipt items editor */
+.receiptItemsEditor {
+    margin-top: 18px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.receiptItemsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.receiptItemsHeader h4 {
+    margin: 0;
+}
+
+#receiptItemsContainer {
+    margin-top: 12px;
+}
+
+/* -------------------- */
+
+.receiptDataFormGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.receiptDataFormGrid label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-weight: bold;
+}
+
+.receiptDataFormGrid input {
+    width: 100%;
+}
+
+@media (max-width: 800px) {
+    .receiptDataFormGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ------------------ */
+
 pre {
     background: #111;
     color: #eee;

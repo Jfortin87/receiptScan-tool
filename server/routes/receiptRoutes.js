@@ -6,7 +6,11 @@ import { fileURLToPath } from "url";
 import { v4 as uuidv4 } from "uuid";
 import Tesseract from "tesseract.js";
 
+
 import db from "../db.js";
+
+//mt    -- Gemini Recept Parser
+import { parseReceiptWithGemini } from "../services/geminiReceiptParser.js";
 
 const router = express.Router();
 
@@ -59,12 +63,12 @@ const upload = multer({
     }
 });
 
-// Upload receipt image and run OCR
+//mt    -- Upload receipt image and run OCR
 router.post("/upload/:groupId", upload.single("receiptImage"), async (req, res) => {
     try {
         const { groupId } = req.params;
 
-        // Make sure group exists
+        //st Make sure group exists
         const group = db.prepare(`
             SELECT *
             FROM receipt_groups
@@ -93,10 +97,10 @@ router.post("/upload/:groupId", upload.single("receiptImage"), async (req, res) 
         const originalFileName = req.file.originalname;
         const savedFileName = req.file.filename;
 
-        // This is the path saved for browser use
+        //st This is the path saved for browser use
         const imagePath = `/uploads/receipts/${savedFileName}`;
 
-        // This is the real server file path for OCR
+        //st This is the real server file path for OCR
         const fullImagePath = req.file.path;
 
         console.log("Running OCR on:", fullImagePath);
@@ -105,7 +109,7 @@ router.post("/upload/:groupId", upload.single("receiptImage"), async (req, res) 
 
         const rawText = ocrResult.data.text || "";
 
-        // Clean JSON object for database storage
+        //st Clean JSON object for database storage
         const cleanOcrJson = {
             confidence: ocrResult.data.confidence ?? null,
             text: rawText,
@@ -175,7 +179,7 @@ router.post("/upload/:groupId", upload.single("receiptImage"), async (req, res) 
     }
 });
 
-// Get all receipts from one group
+//mt    -- Get all receipts from one group
 router.get("/group/:groupId", (req, res) => {
     try {
         const { groupId } = req.params;
@@ -202,7 +206,297 @@ router.get("/group/:groupId", (req, res) => {
     }
 });
 
-// Get one receipt by ID
+//mt    -- Update formatted receipt data
+router.put("/:receiptId/formatted-data", (req, res) => {
+    try {
+        const { receiptId } = req.params;
+
+        const receipt = db.prepare(`
+            SELECT *
+            FROM receipts
+            WHERE id = ?
+        `).get(receiptId);
+
+        if (!receipt) {
+            return res.status(404).json({
+                error: "Receipt not found"
+            });
+        }
+
+        const toNumber = (value) => {
+            const numberValue = Number(value);
+
+            if (Number.isNaN(numberValue)) {
+                return 0;
+            }
+
+            return numberValue;
+        };
+
+        const updatedReceiptData = {
+            id: receiptId,
+
+            storeName: req.body.storeName || null,
+            receiptDate: req.body.receiptDate || null,
+            orderNumber: req.body.orderNumber || null,
+            cashierNumber: req.body.cashierNumber || null,
+            customerNumber: req.body.customerNumber || null,
+            phoneNumber: req.body.phoneNumber || null,
+
+            subTotal: toNumber(req.body.subTotal),
+            cannabisExciseTax: toNumber(req.body.cannabisExciseTax),
+            localTax: toNumber(req.body.localTax),
+            maSalesTax: toNumber(req.body.maSalesTax),
+            totalTax: toNumber(req.body.totalTax),
+            discount: toNumber(req.body.discount),
+            grandTotal: toNumber(req.body.grandTotal),
+
+            totalItems: toNumber(req.body.totalItems),
+            totalGrams: toNumber(req.body.totalGrams),
+            startingAllotment: toNumber(req.body.startingAllotment),
+            remainingAllotment: toNumber(req.body.remainingAllotment),
+
+            updatedAt: new Date().toISOString()
+        };
+
+        db.prepare(`
+            UPDATE receipts
+            SET
+                storeName = @storeName,
+                receiptDate = @receiptDate,
+                orderNumber = @orderNumber,
+                cashierNumber = @cashierNumber,
+                customerNumber = @customerNumber,
+                phoneNumber = @phoneNumber,
+
+                subTotal = @subTotal,
+                cannabisExciseTax = @cannabisExciseTax,
+                localTax = @localTax,
+                maSalesTax = @maSalesTax,
+                totalTax = @totalTax,
+                discount = @discount,
+                grandTotal = @grandTotal,
+
+                totalItems = @totalItems,
+                totalGrams = @totalGrams,
+                startingAllotment = @startingAllotment,
+                remainingAllotment = @remainingAllotment,
+
+                updatedAt = @updatedAt
+            WHERE id = @id
+        `).run(updatedReceiptData);
+
+        const updatedReceipt = db.prepare(`
+            SELECT *
+            FROM receipts
+            WHERE id = ?
+        `).get(receiptId);
+
+        res.json({
+            message: "Formatted receipt data updated",
+            receipt: updatedReceipt
+        });
+    } catch (error) {
+        console.error("UPDATE FORMATTED RECEIPT DATA ERROR:", error);
+
+        res.status(500).json({
+            error: "Failed to update formatted receipt data"
+        });
+    }
+});
+
+
+//mt    -- Update receipt items
+router.put("/:receiptId/items", (req, res) => {
+    try {
+        const { receiptId } = req.params;
+        const { items } = req.body;
+
+        const receipt = db.prepare(`
+            SELECT *
+            FROM receipts
+            WHERE id = ?
+        `).get(receiptId);
+
+        if (!receipt) {
+            return res.status(404).json({
+                error: "Receipt not found"
+            });
+        }
+
+        if (!Array.isArray(items)) {
+            return res.status(400).json({
+                error: "Items must be an array"
+            });
+        }
+
+        const toNumber = (value) => {
+            const numberValue = Number(value);
+
+            if (Number.isNaN(numberValue)) {
+                return 0;
+            }
+
+            return numberValue;
+        };
+
+        const now = new Date().toISOString();
+
+        const deleteOldItems = db.prepare(`
+            DELETE FROM receipt_items
+            WHERE receiptId = ?
+        `);
+
+        const insertItem = db.prepare(`
+            INSERT INTO receipt_items (
+                id,
+                receiptId,
+                itemName,
+                itemDetails,
+                itemPrice,
+                itemQuantity,
+                itemGrams,
+                itemTotal,
+                createdAt,
+                updatedAt
+            )
+            VALUES (
+                @id,
+                @receiptId,
+                @itemName,
+                @itemDetails,
+                @itemPrice,
+                @itemQuantity,
+                @itemGrams,
+                @itemTotal,
+                @createdAt,
+                @updatedAt
+            )
+        `);
+
+        const saveItemsTransaction = db.transaction(() => {
+            deleteOldItems.run(receiptId);
+
+            items.forEach((item) => {
+                const formattedItem = {
+                    id: uuidv4(),
+                    receiptId,
+                    itemName: item.itemName || null,
+                    itemDetails: item.itemDetails || null,
+                    itemPrice: toNumber(item.itemPrice),
+                    itemQuantity: toNumber(item.itemQuantity),
+                    itemGrams: toNumber(item.itemGrams),
+                    itemTotal: toNumber(item.itemTotal),
+                    createdAt: now,
+                    updatedAt: now
+                };
+
+                insertItem.run(formattedItem);
+            });
+        });
+
+        saveItemsTransaction();
+
+        const updatedItems = db.prepare(`
+            SELECT *
+            FROM receipt_items
+            WHERE receiptId = ?
+            ORDER BY createdAt ASC
+        `).all(receiptId);
+
+        res.json({
+            message: "Receipt items updated",
+            items: updatedItems
+        });
+    } catch (error) {
+        console.error("UPDATE RECEIPT ITEMS ERROR:", error);
+
+        res.status(500).json({
+            error: "Failed to update receipt items"
+        });
+    }
+});
+
+//st    -- Get one receipt with formatted data and items
+router.get("/:receiptId/details", (req, res) => {
+    try {
+        const { receiptId } = req.params;
+
+        const receipt = db.prepare(`
+            SELECT *
+            FROM receipts
+            WHERE id = ?
+        `).get(receiptId);
+
+        if (!receipt) {
+            return res.status(404).json({
+                error: "Receipt not found"
+            });
+        }
+
+        const items = db.prepare(`
+            SELECT *
+            FROM receipt_items
+            WHERE receiptId = ?
+            ORDER BY createdAt ASC
+        `).all(receiptId);
+
+        res.json({
+            receipt: {
+                ...receipt,
+                ocrJson: receipt.ocrJson ? JSON.parse(receipt.ocrJson) : null
+            },
+            items
+        });
+    } catch (error) {
+        console.error("GET RECEIPT DETAILS ERROR:", error);
+
+        res.status(500).json({
+            error: "Failed to get receipt details"
+        });
+    }
+});
+
+//mt    -- Auto fill formatted receipt data using Gemini
+router.post("/:receiptId/auto-fill", async (req, res) => {
+    try {
+        const { receiptId } = req.params;
+
+        const receipt = db.prepare(`
+            SELECT *
+            FROM receipts
+            WHERE id = ?
+        `).get(receiptId);
+
+        if (!receipt) {
+            return res.status(404).json({
+                error: "Receipt not found"
+            });
+        }
+
+        if (!receipt.rawText || !receipt.rawText.trim()) {
+            return res.status(400).json({
+                error: "This receipt has no OCR text to parse"
+            });
+        }
+
+        const parsedReceiptData = await parseReceiptWithGemini(receipt.rawText);
+
+        res.json({
+            message: "Receipt data parsed from OCR",
+            parsedData: parsedReceiptData
+        });
+    } catch (error) {
+        console.error("AUTO FILL RECEIPT DATA ERROR:", error);
+
+        res.status(500).json({
+            error: "Failed to auto fill receipt data",
+            details: error.message
+        });
+    }
+});
+
+//mt    -- Get one receipt by ID
 router.get("/:receiptId", (req, res) => {
     try {
         const { receiptId } = req.params;

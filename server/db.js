@@ -3,27 +3,27 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 
-// Get current folder path because we are using ES modules
+//mt    -- Get current folder path because we are using ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Make sure the data folder exists
+//mt    -- Make sure the data folder exists
 const dataDir = path.join(__dirname, "data");
 
 if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
 }
 
-// Database file path
+//mt    -- Database file path
 const dbPath = path.join(dataDir, "receipts.db");
 
-// Connect to SQLite database
+//mt    -- Connect to SQLite database
 const db = new Database(dbPath);
 
-// Turn on foreign key support
+//mt    -- Turn on foreign key support
 db.pragma("foreign_keys = ON");
 
-// Create receipt groups table
+//mt    -- Create receipt groups table
 db.prepare(`
     CREATE TABLE IF NOT EXISTS receipt_groups (
         id TEXT PRIMARY KEY,
@@ -33,7 +33,7 @@ db.prepare(`
     )
 `).run();
 
-// Create receipts table
+//mt    --  Create receipts table
 db.prepare(`
     CREATE TABLE IF NOT EXISTS receipts (
         id TEXT PRIMARY KEY,
@@ -50,7 +50,68 @@ db.prepare(`
     )
 `).run();
 
-// Helpful indexes for searching later
+//mt   -- Safely add new columns to existing receipts table
+function addColumnIfMissing(tableName, columnName, columnDefinition) {
+    const columns = db.prepare(`PRAGMA table_info(${tableName})`).all();
+
+    const columnExists = columns.some((column) => column.name === columnName);
+
+    if (!columnExists) {
+        db.prepare(`
+            ALTER TABLE ${tableName}
+            ADD COLUMN ${columnName} ${columnDefinition}
+        `).run();
+    }
+}
+
+
+//mt    -- Formatted receipt data columns
+addColumnIfMissing("receipts", "storeName", "TEXT");
+addColumnIfMissing("receipts", "receiptDate", "TEXT");
+addColumnIfMissing("receipts", "orderNumber", "TEXT");
+addColumnIfMissing("receipts", "cashierNumber", "TEXT");
+addColumnIfMissing("receipts", "customerNumber", "TEXT");
+addColumnIfMissing("receipts", "phoneNumber", "TEXT");
+
+addColumnIfMissing("receipts", "subTotal", "REAL DEFAULT 0");
+addColumnIfMissing("receipts", "cannabisExciseTax", "REAL DEFAULT 0");
+addColumnIfMissing("receipts", "localTax", "REAL DEFAULT 0");
+addColumnIfMissing("receipts", "maSalesTax", "REAL DEFAULT 0");
+addColumnIfMissing("receipts", "totalTax", "REAL DEFAULT 0");
+addColumnIfMissing("receipts", "discount", "REAL DEFAULT 0");
+addColumnIfMissing("receipts", "grandTotal", "REAL DEFAULT 0");
+
+addColumnIfMissing("receipts", "totalItems", "REAL DEFAULT 0");
+addColumnIfMissing("receipts", "totalGrams", "REAL DEFAULT 0");
+addColumnIfMissing("receipts", "startingAllotment", "REAL DEFAULT 0");
+addColumnIfMissing("receipts", "remainingAllotment", "REAL DEFAULT 0");
+addColumnIfMissing("receipts", "updatedAt", "TEXT");
+
+
+//mt   -- Receipt items table
+db.prepare(`
+    CREATE TABLE IF NOT EXISTS receipt_items (
+        id TEXT PRIMARY KEY,
+        receiptId TEXT NOT NULL,
+
+        itemName TEXT,
+        itemDetails TEXT,
+        itemPrice REAL DEFAULT 0,
+        itemQuantity REAL DEFAULT 0,
+        itemGrams REAL DEFAULT 0,
+        itemTotal REAL DEFAULT 0,
+
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT,
+
+        FOREIGN KEY (receiptId) REFERENCES receipts(id)
+        ON DELETE CASCADE
+    )
+`).run();
+
+
+
+//! Helpful indexes for searching later
 db.prepare(`
     CREATE INDEX IF NOT EXISTS idx_receipt_groups_title
     ON receipt_groups(title)

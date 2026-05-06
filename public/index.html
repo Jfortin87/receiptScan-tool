@@ -25,6 +25,7 @@
         </button>
     </section>
 
+    <!--!       --  Main --      -->
     <main id="uploadEditPanel" class="appLayout" style="display: none;">
 
         <!--mt      -- Create Group --       -->
@@ -56,7 +57,7 @@
 
         <!--mt      -- Upload Receipt --         -->
         <section class="card">
-            <h2>Upload Receipt</h2>
+            <h2>Upload Receipt From:</h2>
 
             <p>
                 Selected Group:
@@ -74,7 +75,166 @@
 
         <!--mt      -- Receipts --       -->
         <section class="card fullWidth">
-            <h2>Receipts In Selected Group</h2>
+            <h2>Receipts In Selected Group
+                <!-- <span id="selectedReceiptGroupTitle">(None)</span>
+                <span id="selectedReceiptCount">(0)</span> -->
+            </h2>
+
+            <!--st  -- Selected group mini dashboard -->
+            <div class="selectedReceiptsDashboard">
+                <div class="selectedReceiptsStat">
+                    <span>Selected Group</span>
+                    <span id="selectedReceiptGroupTitle">(None)</span>
+                </div>
+
+                <div class="selectedReceiptsStat">
+                    <span>Total Receipts</span>
+                    <span id="selectedReceiptCount">(0)</span>
+                </div>
+
+                <div class="selectedReceiptsStat">
+                    <span>Last Upload</span>
+                    <span id="receiptDashLastUpload">No uploads yet</span>
+                </div>
+
+                <div class="receiptToolbar">
+                    <button type="button" id="toggleReceiptTextBtn">Show Text</button>
+
+                </div>
+
+                <!--st   -- Edit formatted receipt data panel -->
+                <div id="editReceiptDataPanel" class="editReceiptDataPanel" style="display: none;">
+                    <div class="editReceiptDataHeader">
+                        <h3>Edit Receipt Data</h3>
+                        <button type="button" id="closeEditReceiptDataBtn">Close</button>
+
+                        <button type="button" id="autoFillReceiptDataBtn">
+                            Auto Fill From OCR </button>
+                    </div>
+
+                    <p>
+                        Editing:
+                        <strong id="editingReceiptFileName">None</strong>
+                    </p>
+
+                    <!--    -- Hidden Receipt Form --    -->
+                    <form id="editReceiptDataForm">
+
+                        <div class="receiptDataFormGrid">
+                            <label>
+                                Store Name
+                                <input type="text" id="editStoreName" placeholder="Example: Nova Farms">
+                            </label>
+
+                            <label>
+                                Receipt Date
+                                <input type="date" id="editReceiptDate">
+                            </label>
+
+                            <label>
+                                Order #
+                                <input type="text" id="editOrderNumber" placeholder="Order number">
+                            </label>
+
+                            <label>
+                                Cashier #
+                                <input type="text" id="editCashierNumber" placeholder="Cashier number">
+                            </label>
+
+                            <label>
+                                Customer #
+                                <input type="text" id="editCustomerNumber" placeholder="Customer number">
+                            </label>
+
+                            <label>
+                                Phone #
+                                <input type="text" id="editPhoneNumber" placeholder="Phone number">
+                            </label>
+
+                            <label>
+                                Sub Total
+                                <input type="number" id="editSubTotal" step="0.01" placeholder="0.00">
+                            </label>
+
+                            <label>
+                                Cannabis Excise Tax
+                                <input type="number" id="editCannabisExciseTax" step="0.01" placeholder="0.00">
+                            </label>
+
+                            <label>
+                                Local Tax
+                                <input type="number" id="editLocalTax" step="0.01" placeholder="0.00">
+                            </label>
+
+                            <label>
+                                MA Sales Tax
+                                <input type="number" id="editMaSalesTax" step="0.01" placeholder="0.00">
+                            </label>
+
+                            <label>
+                                Total Tax
+                                <input type="number" id="editTotalTax" step="0.01" placeholder="0.00"> </label>
+
+                            <label>
+                                Discount
+                                <input type="number" id="editDiscount" step="0.01" placeholder="0.00">
+                            </label>
+
+                            <label>
+                                Grand Total
+                                <input type="number" id="editGrandTotal" step="0.01" placeholder="0.00">
+                            </label>
+
+                            <label>
+                                Total Items
+                                <input type="number" id="editTotalItems" step="1" placeholder="0">
+                            </label>
+
+                            <label>
+                                Total Grams
+                                <input type="number" id="editTotalGrams" step="0.01" placeholder="0.00">
+                            </label>
+
+                            <label>
+                                Starting Allotment
+                                <input type="number" id="editStartingAllotment" step="0.01" placeholder="0.00">
+                            </label>
+
+                            <label>
+                                Remaining Allotment
+                                <input type="number" id="editRemainingAllotment" step="0.01" placeholder="0.00">
+                            </label>
+
+                        </div>
+
+                        <!--     -- Receipt items editor -->
+                        <div class="receiptItemsEditor">
+                            <div class="receiptItemsHeader">
+                                <h4>Items</h4>
+                                <button type="button" id="addReceiptItemBtn">Add Item</button>
+                            </div>
+
+                            <div id="receiptItemsContainer">
+                                <!-- items will load here -->
+                            </div>
+                        </div>
+
+                        <!--    -- Edit Btn --   -->
+                        <div class="editReceiptDataActions">
+                            <button type="button" id="autoFillReceiptDataBtn">
+                                Auto Fill From OCR </button>
+
+                            <button type="submit">Save Receipt Data </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+
 
             <div id="receiptsContainer" class="receiptsContainer">
                 <!--! Receipts load here -->
